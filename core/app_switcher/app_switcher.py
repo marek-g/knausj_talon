@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 import time
 from pathlib import Path
 
@@ -256,12 +257,16 @@ class Actions:
 
     def switcher_focus(name: str):
         """Focus a new application by name"""
-        app = actions.user.get_running_app(name)
+        app = actions.user.get_running_app(name)    
         actions.user.switcher_focus_app(app)
 
     def switcher_focus_app(app: ui.App):
         """Focus application and wait until switch is made"""
-        app.focus()
+        if sys.platform == "linux":
+            # Marek: seems like Talon's bug - app.focus() is not working on my KDE desktop
+            os.system("wmctrl -a " + app.name)
+        else:
+            app.focus()
         t1 = time.perf_counter()
         while ui.active_app() != app:
             if time.perf_counter() - t1 > 1:
